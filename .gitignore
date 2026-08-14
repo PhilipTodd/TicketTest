@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# project specific Files
+TicketTest.Api/tickets.db
+
 # Local development settings
 appsettings.Development.json
 appsettings.Local.json
@@ -425,3 +428,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
