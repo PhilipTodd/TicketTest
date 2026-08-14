@@ -1,0 +1,36 @@
+﻿# Cursor ignore list — reduces indexing noise and keeps runtime/sensitive files out of AI context.
+# Uses .gitignore syntax. Cursor also respects .gitignore automatically.
+
+# Build output
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# IDE and editor caches
+.vs/
+.idea/
+.history/
+
+# SQLite runtime database (binary; regenerated locally)
+*.db
+*.db-shm
+*.db-wal
+
+# Local / sensitive configuration
+appsettings.Development.json
+appsettings.Local.json
+local.settings.json
+.env
+.env.*
+
+# Dependencies
+node_modules/
+**/[Pp]ackages/
+
+# Logs and temp files
+*.log
+*.tmp
+*.binlog
