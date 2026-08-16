@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using System.Net.Http.Json;
 using TicketTest.Api.Contracts;
 using TicketTest.Api.Tests.Infrastructure;
@@ -106,9 +107,12 @@ public sealed class UpdateTicketTests
             $"/api/tickets/{created.Id}",
             staleUpdate);
 
-        Assert.Equal(
-            HttpStatusCode.Conflict,
-            staleResponse.StatusCode);
+        var problem = await staleResponse.Content
+            .ReadFromJsonAsync<ProblemDetails>();
+
+        Assert.NotNull(problem);
+        Assert.Equal(409, problem.Status);
+        Assert.Equal("Concurrency conflict", problem.Title);
     }
 
     [Fact]

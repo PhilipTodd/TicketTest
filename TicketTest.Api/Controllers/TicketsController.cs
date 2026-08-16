@@ -11,6 +11,14 @@ namespace TicketTest.Api.Controllers;
 [Route("api/[controller]")]
 public class TicketsController(AppDbContext db) : ControllerBase
 {
+    private static readonly IReadOnlySet<string> AllowedSortFields =
+    new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "CreatedAt",
+        "Priority",
+        "Title"
+    };
+
     [HttpGet]
     public async Task<ActionResult<PagedResponse<TicketResponse>>> GetAll(
         [FromQuery] string? status,
@@ -54,9 +62,7 @@ public class TicketsController(AppDbContext db) : ControllerBase
             });
         }
 
-        var allowedSortFields = new[] { "CreatedAt", "Priority", "Title" };
-
-        if (!allowedSortFields.Contains(sortBy, StringComparer.OrdinalIgnoreCase)) // sort field not allowed
+        if (!AllowedSortFields.Contains(sortBy))
         {
             return BadRequest(new ProblemDetails
             {
@@ -170,12 +176,7 @@ public class TicketsController(AppDbContext db) : ControllerBase
 
         if (ticket is null)
         {
-            return NotFound(new ProblemDetails
-            {
-                Title = "Ticket not found",
-                Detail = $"Ticket {id} was not found.",
-                Status = StatusCodes.Status404NotFound
-            });
+            return TicketNotFound(id);
         }
 
         return Ok(ticket);
@@ -186,25 +187,16 @@ public class TicketsController(AppDbContext db) : ControllerBase
         CreateTicketRequest request,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Title))
-        {
-            return ValidationError(
-                "title",
-                "Title is required.");
-        }
+        var validationError = ValidateTicketFields(
+            request.Title,
+            request.Description,
+            request.Status,
+            request.Priority,
+            request.AssignedTo);
 
-        if (string.IsNullOrWhiteSpace(request.Description))
+        if (validationError is not null)
         {
-            return ValidationError(
-                "description",
-                "Description is required.");
-        }
-
-        if (!TicketRules.IsValidStatus(request.Status))
-        {
-            return ValidationError(
-                "status",
-                "Status must be one of: Open, InProgress, Resolved or Closed.");
+            return validationError;
         }
 
         if (!TicketRules.IsValidCreateStatus(request.Status))
@@ -212,21 +204,6 @@ public class TicketsController(AppDbContext db) : ControllerBase
             return ValidationError(
                 "status",
                 "A new ticket must start as Open or InProgress.");
-        }
-
-        if (!TicketRules.IsValidPriority(request.Priority))
-        {
-            return ValidationError(
-                "priority",
-                "Priority must be one of: Low, Medium, High or Critical.");
-        }
-
-        if (TicketRules.RequiresAssignee(request.Priority) &&
-            string.IsNullOrWhiteSpace(request.AssignedTo))
-        {
-            return ValidationError(
-                "assignedTo",
-                "Critical tickets must have an assignee.");
         }
 
         var ticket = new Ticket
@@ -254,9 +231,9 @@ public class TicketsController(AppDbContext db) : ControllerBase
 
     [HttpPut("{id:int}")]
     public async Task<ActionResult<TicketResponse>> Update(
-        int id,
-        UpdateTicketRequest request,
-        CancellationToken cancellationToken)
+         int id,
+         UpdateTicketRequest request,
+         CancellationToken cancellationToken)
     {
         var ticket = await db.Tickets
             .SingleOrDefaultAsync(
@@ -265,12 +242,7 @@ public class TicketsController(AppDbContext db) : ControllerBase
 
         if (ticket is null)
         {
-            return NotFound(new ProblemDetails
-            {
-                Title = "Ticket not found",
-                Detail = $"Ticket {id} was not found.",
-                Status = StatusCodes.Status404NotFound
-            });
+            return TicketNotFound(id);
         }
 
         if (ticket.Status.Equals(
@@ -284,50 +256,19 @@ public class TicketsController(AppDbContext db) : ControllerBase
 
         if (request.Version != ticket.Version)
         {
-            return Conflict(new ProblemDetails
-            {
-                Title = "Concurrency conflict",
-                Detail =
-                    "The ticket has been modified since it was loaded. " +
-                    "Reload the ticket and try again.",
-                Status = StatusCodes.Status409Conflict
-            });
+            return ConcurrencyConflict();
         }
 
-        if (string.IsNullOrWhiteSpace(request.Title))
-        {
-            return ValidationError(
-                "title",
-                "Title is required.");
-        }
+        var validationError = ValidateTicketFields(
+            request.Title,
+            request.Description,
+            request.Status,
+            request.Priority,
+            request.AssignedTo);
 
-        if (string.IsNullOrWhiteSpace(request.Description))
+        if (validationError is not null)
         {
-            return ValidationError(
-                "description",
-                "Description is required.");
-        }
-
-        if (!TicketRules.IsValidStatus(request.Status))
-        {
-            return ValidationError(
-                "status",
-                "Status must be one of: Open, InProgress, Resolved or Closed.");
-        }
-
-        if (!TicketRules.IsValidPriority(request.Priority))
-        {
-            return ValidationError(
-                "priority",
-                "Priority must be one of: Low, Medium, High or Critical.");
-        }
-
-        if (TicketRules.RequiresAssignee(request.Priority) &&
-            string.IsNullOrWhiteSpace(request.AssignedTo))
-        {
-            return ValidationError(
-                "assignedTo",
-                "Critical tickets must have an assignee.");
+            return validationError;
         }
 
         if (!TicketRules.CanTransition(
@@ -354,9 +295,9 @@ public class TicketsController(AppDbContext db) : ControllerBase
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(
-    int id,
-    [FromQuery] int? version,
-    CancellationToken cancellationToken)
+         int id,
+         [FromQuery] int? version,
+         CancellationToken cancellationToken)
     {
         if (version is null)
         {
@@ -372,12 +313,7 @@ public class TicketsController(AppDbContext db) : ControllerBase
 
         if (ticket is null)
         {
-            return NotFound(new ProblemDetails
-            {
-                Title = "Ticket not found",
-                Detail = $"Ticket {id} was not found.",
-                Status = StatusCodes.Status404NotFound
-            });
+            return TicketNotFound(id);
         }
 
         if (ticket.Status.Equals(
@@ -391,14 +327,7 @@ public class TicketsController(AppDbContext db) : ControllerBase
 
         if (version.Value != ticket.Version)
         {
-            return Conflict(new ProblemDetails
-            {
-                Title = "Concurrency conflict",
-                Detail =
-                    "The ticket has been modified since it was loaded. " +
-                    "Reload the ticket and try again.",
-                Status = StatusCodes.Status409Conflict
-            });
+            return ConcurrencyConflict();
         }
 
         db.Tickets.Remove(ticket);
@@ -409,6 +338,52 @@ public class TicketsController(AppDbContext db) : ControllerBase
     }
 
     // Helper methods:
+    private static BadRequestObjectResult? ValidateTicketFields(
+        string title,
+        string description,
+        string status,
+        string priority,
+        string? assignedTo)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return ValidationError(
+                "title",
+                "Title is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return ValidationError(
+                "description",
+                "Description is required.");
+        }
+
+        if (!TicketRules.IsValidStatus(status))
+        {
+            return ValidationError(
+                "status",
+                "Status must be one of: Open, InProgress, Resolved or Closed.");
+        }
+
+        if (!TicketRules.IsValidPriority(priority))
+        {
+            return ValidationError(
+                "priority",
+                "Priority must be one of: Low, Medium, High or Critical.");
+        }
+
+        if (TicketRules.RequiresAssignee(priority) &&
+            string.IsNullOrWhiteSpace(assignedTo))
+        {
+            return ValidationError(
+                "assignedTo",
+                "Critical tickets must have an assignee.");
+        }
+
+        return null;
+    }
+
     private static BadRequestObjectResult ValidationError(
         string field,
         string message)
@@ -435,6 +410,28 @@ public class TicketsController(AppDbContext db) : ControllerBase
         ticket.CreatedAt,
         ticket.UpdatedAt,
         ticket.Version);
+
+    private static NotFoundObjectResult TicketNotFound(int id)
+    {
+        return new NotFoundObjectResult(new ProblemDetails
+        {
+            Title = "Ticket not found",
+            Detail = $"Ticket {id} was not found.",
+            Status = StatusCodes.Status404NotFound
+        });
+    }
+
+    private static ConflictObjectResult ConcurrencyConflict()
+    {
+        return new ConflictObjectResult(new ProblemDetails
+        {
+            Title = "Concurrency conflict",
+            Detail =
+                "The ticket has been modified since it was loaded. " +
+                "Reload the ticket and try again.",
+            Status = StatusCodes.Status409Conflict
+        });
+    }
 
     private static string NormalizeStatus(string status) =>
         status.ToLowerInvariant() switch
