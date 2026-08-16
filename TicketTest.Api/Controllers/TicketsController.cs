@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TicketTest.Api.Contracts;
 using TicketTest.Api.Data;
 using TicketTest.Api.Models;
+using TicketTest.Api.Services;
 
 namespace TicketTest.Api.Controllers;
 
@@ -148,22 +149,160 @@ public class TicketsController(AppDbContext db) : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Ticket>> GetById(int id)
+    public async Task<ActionResult<TicketResponse>> GetById(
+        int id,
+        CancellationToken cancellationToken)
     {
-        var ticket = await db.Tickets.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-        return ticket is null ? NotFound() : Ok(ticket);
+        var ticket = await db.Tickets
+            .AsNoTracking()
+            .Where(ticket => ticket.Id == id)
+            .Select(ticket => new TicketResponse(
+                ticket.Id,
+                ticket.Title,
+                ticket.Description,
+                ticket.Status,
+                ticket.Priority,
+                ticket.AssignedTo,
+                ticket.CreatedAt,
+                ticket.UpdatedAt,
+                ticket.Version))
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (ticket is null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Ticket not found",
+                Detail = $"Ticket {id} was not found.",
+                Status = StatusCodes.Status404NotFound
+            });
+        }
+
+        return Ok(ticket);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Ticket>> Create(Ticket ticket)
+    public async Task<ActionResult<TicketResponse>> Create(
+    CreateTicketRequest request,
+    CancellationToken cancellationToken)
     {
-        ticket.Id = 0;
-        ticket.CreatedAt = DateTime.UtcNow;
-        ticket.UpdatedAt = null;
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            return ValidationError(
+                "title",
+                "Title is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Description))
+        {
+            return ValidationError(
+                "description",
+                "Description is required.");
+        }
+
+        if (!TicketRules.IsValidStatus(request.Status))
+        {
+            return ValidationError(
+                "status",
+                "Status must be one of: Open, InProgress, Resolved or Closed.");
+        }
+
+        if (!TicketRules.IsValidCreateStatus(request.Status))
+        {
+            return ValidationError(
+                "status",
+                "A new ticket must start as Open or InProgress.");
+        }
+
+        if (!TicketRules.IsValidPriority(request.Priority))
+        {
+            return ValidationError(
+                "priority",
+                "Priority must be one of: Low, Medium, High or Critical.");
+        }
+
+        if (TicketRules.RequiresAssignee(request.Priority) &&
+            string.IsNullOrWhiteSpace(request.AssignedTo))
+        {
+            return ValidationError(
+                "assignedTo",
+                "Critical tickets must have an assignee.");
+        }
+
+        var ticket = new Ticket
+        {
+            Title = request.Title.Trim(),
+            Description = request.Description.Trim(),
+            Status = NormalizeStatus(request.Status),
+            Priority = NormalizePriority(request.Priority),
+            AssignedTo = NormalizeOptional(request.AssignedTo),
+            CreatedAt = DateTime.UtcNow,
+            Version = 1
+        };
 
         db.Tickets.Add(ticket);
-        await db.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, ticket);
+        await db.SaveChangesAsync(cancellationToken);
+
+        var response = ToResponse(ticket);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = ticket.Id },
+            response);
     }
+
+
+    // Helper methods:
+    private static BadRequestObjectResult ValidationError(
+        string field,
+        string message)
+    {
+        return new BadRequestObjectResult(
+            new ValidationProblemDetails(
+                new Dictionary<string, string[]>
+                {
+                    [field] = [message]
+                })
+            {
+                Status = StatusCodes.Status400BadRequest
+            });
+    }
+
+    private static TicketResponse ToResponse(Ticket ticket) =>
+    new(
+        ticket.Id,
+        ticket.Title,
+        ticket.Description,
+        ticket.Status,
+        ticket.Priority,
+        ticket.AssignedTo,
+        ticket.CreatedAt,
+        ticket.UpdatedAt,
+        ticket.Version);
+
+    private static string NormalizeStatus(string status) =>
+        status.ToLowerInvariant() switch
+        {
+            "open" => "Open",
+            "inprogress" => "InProgress",
+            "resolved" => "Resolved",
+            "closed" => "Closed",
+            _ => status
+        };
+
+    private static string NormalizePriority(string priority) =>
+        priority.ToLowerInvariant() switch
+        {
+            "low" => "Low",
+            "medium" => "Medium",
+            "high" => "High",
+            "critical" => "Critical",
+            _ => priority
+        };
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim();
 }
