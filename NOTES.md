@@ -140,7 +140,6 @@ I validated the resulting work by:
 - building and running the API and Angular application locally;
 - exercising the API and UI manually, including validation and error scenarios;
 - writing and running automated integration tests against the API;
-- verifying filtering, paging and sorting were performed through API requests rather than client-side processing;
 - manually testing create, update and delete workflows;
 - testing optimistic-concurrency behaviour, including stale-version `409 Conflict` responses;
 - running the completed SQL against the expected SQLite syntax and reviewing SQL Server-specific differences;
@@ -149,3 +148,15 @@ I validated the resulting work by:
 AI assistance accelerated implementation and provided an additional review mechanism, but the submitted design decisions, code selection and validation remained my responsibility.
 
 The content of this file was provided to an AI tool to verify, grammer & spell check and generally polish the text.
+
+## 9. The optional bonus task - Azure AI / AI foundry
+
+I did not have sufficent time to explore this extra work although I feel it would have increased the quality of my submission. My intention is to spend time expanding this project and add it to my reference appliciations hosted under https://ausdatatech.com.au/. 
+
+It will be expanded to include: 
+
+- Authentication via Azure Entra
+- The AI Foundry integration described in the requirements document
+- Bicep files for creating Azure resources on my Azure tenant to use for hosting
+- YAML based pipelines for CI/CD
+- Online documentation including a README.md with setup and run instructions
