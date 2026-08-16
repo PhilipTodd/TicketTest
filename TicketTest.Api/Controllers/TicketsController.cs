@@ -352,6 +352,62 @@ public class TicketsController(AppDbContext db) : ControllerBase
         return Ok(ToResponse(ticket));
     }
 
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(
+    int id,
+    [FromQuery] int? version,
+    CancellationToken cancellationToken)
+    {
+        if (version is null)
+        {
+            return ValidationError(
+                "version",
+                "Version is required.");
+        }
+
+        var ticket = await db.Tickets
+            .SingleOrDefaultAsync(
+                ticket => ticket.Id == id,
+                cancellationToken);
+
+        if (ticket is null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Ticket not found",
+                Detail = $"Ticket {id} was not found.",
+                Status = StatusCodes.Status404NotFound
+            });
+        }
+
+        if (ticket.Status.Equals(
+            "Closed",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return ValidationError(
+                "status",
+                "Closed tickets cannot be deleted.");
+        }
+
+        if (version.Value != ticket.Version)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Concurrency conflict",
+                Detail =
+                    "The ticket has been modified since it was loaded. " +
+                    "Reload the ticket and try again.",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        db.Tickets.Remove(ticket);
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        return NoContent();
+    }
+
     // Helper methods:
     private static BadRequestObjectResult ValidationError(
         string field,
