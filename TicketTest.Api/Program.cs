@@ -25,3 +25,5 @@ app.UseStaticFiles();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 app.Run();
+
+public partial class Program; // <-- give integration test project a public type to use
