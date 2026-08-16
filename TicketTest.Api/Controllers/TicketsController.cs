@@ -13,15 +13,15 @@ public class TicketsController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResponse<TicketResponse>>> GetAll(
-    [FromQuery] string? status,
-    [FromQuery] string? priority,
-    [FromQuery] string? assignedTo,
-    [FromQuery] string? search,
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 20,
-    [FromQuery] string sortBy = "CreatedAt",
-    [FromQuery] string sortDirection = "desc",
-    CancellationToken cancellationToken = default)
+        [FromQuery] string? status,
+        [FromQuery] string? priority,
+        [FromQuery] string? assignedTo,
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string sortBy = "CreatedAt",
+        [FromQuery] string sortDirection = "desc",
+        CancellationToken cancellationToken = default)
     {
         if (page < 1) // no negative page numer
         {
@@ -183,8 +183,8 @@ public class TicketsController(AppDbContext db) : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult<TicketResponse>> Create(
-    CreateTicketRequest request,
-    CancellationToken cancellationToken)
+        CreateTicketRequest request,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Title))
         {
@@ -252,6 +252,105 @@ public class TicketsController(AppDbContext db) : ControllerBase
             response);
     }
 
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<TicketResponse>> Update(
+        int id,
+        UpdateTicketRequest request,
+        CancellationToken cancellationToken)
+    {
+        var ticket = await db.Tickets
+            .SingleOrDefaultAsync(
+                ticket => ticket.Id == id,
+                cancellationToken);
+
+        if (ticket is null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Ticket not found",
+                Detail = $"Ticket {id} was not found.",
+                Status = StatusCodes.Status404NotFound
+            });
+        }
+
+        if (ticket.Status.Equals(
+            "Closed",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return ValidationError(
+                "status",
+                "Closed tickets cannot be edited.");
+        }
+
+        if (request.Version != ticket.Version)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Concurrency conflict",
+                Detail =
+                    "The ticket has been modified since it was loaded. " +
+                    "Reload the ticket and try again.",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            return ValidationError(
+                "title",
+                "Title is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Description))
+        {
+            return ValidationError(
+                "description",
+                "Description is required.");
+        }
+
+        if (!TicketRules.IsValidStatus(request.Status))
+        {
+            return ValidationError(
+                "status",
+                "Status must be one of: Open, InProgress, Resolved or Closed.");
+        }
+
+        if (!TicketRules.IsValidPriority(request.Priority))
+        {
+            return ValidationError(
+                "priority",
+                "Priority must be one of: Low, Medium, High or Critical.");
+        }
+
+        if (TicketRules.RequiresAssignee(request.Priority) &&
+            string.IsNullOrWhiteSpace(request.AssignedTo))
+        {
+            return ValidationError(
+                "assignedTo",
+                "Critical tickets must have an assignee.");
+        }
+
+        if (!TicketRules.CanTransition(
+            ticket.Status,
+            request.Status))
+        {
+            return ValidationError(
+                "status",
+                $"Status cannot transition from {ticket.Status} to {request.Status}.");
+        }
+
+        ticket.Title = request.Title.Trim();
+        ticket.Description = request.Description.Trim();
+        ticket.Status = NormalizeStatus(request.Status);
+        ticket.Priority = NormalizePriority(request.Priority);
+        ticket.AssignedTo = NormalizeOptional(request.AssignedTo);
+        ticket.UpdatedAt = DateTime.UtcNow;
+        ticket.Version++;
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        return Ok(ToResponse(ticket));
+    }
 
     // Helper methods:
     private static BadRequestObjectResult ValidationError(
