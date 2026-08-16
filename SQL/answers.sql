@@ -72,7 +72,7 @@ SELECT
   COALESCE(UpdatedAt, CreatedAt) AS LastActivityAt
 FROM Tickets
 WHERE Status <> 'Closed'
-  AND datetime(COALESCE(UpdatedAt, CreatedAt)) < datetime('now', '-30 days');
+  AND COALESCE(UpdatedAt, CreatedAt) < datetime('now', '-30 days');
 
 
 -- 6.
@@ -90,18 +90,25 @@ WHERE Id = 1
 
 
 -- 7.
--- SQL:
 CREATE INDEX IX_Tickets_Status_Priority_CreatedAt
 ON Tickets (Status, Priority, CreatedAt DESC);
 
 -- Explanation:
--- Status and Priority are equality predicates, so they belong first in the key.
--- CreatedAt supports the ORDER BY CreatedAt DESC, allowing the engine to seek matching
--- rows and return them in sort order without a separate sort step.
--- SQL Server: Yes, the same column order applies. SQL Server also benefits from leading
--- equality columns followed by the sort column. DESC on CreatedAt can be specified
--- explicitly in SQL Server 2019+ (CREATE INDEX ... (CreatedAt DESC)); older versions
--- still use the index efficiently via a backward scan.
+-- Status and Priority are equality predicates, so they are the leading index keys.
+-- CreatedAt follows them because it supports the requested ordering after the
+-- equality predicates have identified the relevant rows. This can avoid an
+-- additional sort operation.
+--
+-- SQL Server:
+-- I would use the same key-column order in SQL Server:
+-- CREATE INDEX IX_Tickets_Status_Priority_CreatedAt
+-- ON Tickets (Status, Priority, CreatedAt DESC);
+--
+-- Because the query uses SELECT *, this index does not necessarily cover every
+-- selected column. In SQL Server I would review the actual execution plan,
+-- lookup cost and workload before adding INCLUDE columns. Including every Ticket
+-- column merely to cover SELECT * could make the index unnecessarily wide and
+-- increase storage and write costs.
 
 -- 8.
 SELECT
@@ -126,15 +133,22 @@ LIMIT 1;
 
 -- 9.
 -- SQLite:
--- WHERE CreatedAt >= datetime('now', '-30 days')
--- (Compare the raw column to a computed boundary instead of wrapping CreatedAt in date().)
+SELECT *
+FROM Tickets
+WHERE Status = 'Open'
+  AND CreatedAt >= datetime('now', '-30 days');
 
 -- SQL Server equivalent:
--- WHERE CreatedAt >= DATEADD(day, -30, SYSUTCDATETIME())
+-- SELECT *
+-- FROM Tickets
+-- WHERE Status = 'Open'
+--   AND CreatedAt >= DATEADD(day, -30, SYSUTCDATETIME());
 
 -- Explanation:
--- Applying a function such as date(CreatedAt) to an indexed column makes the predicate
--- non-sargable: SQL Server must evaluate the function on every row instead of seeking
--- the index on CreatedAt. Rewriting the filter to compare CreatedAt directly against a
--- precomputed cutoff preserves index usability and typically performs much better on
--- large tables.
+-- Applying a function such as date(CreatedAt) to an indexed column makes the
+-- predicate non-SARGable. In SQL Server this can prevent an efficient index seek
+-- because the database may need to evaluate the function for rows before applying
+-- the predicate.
+--
+-- Comparing the raw CreatedAt column against a calculated boundary leaves the
+-- indexed column unchanged, making the predicate more amenable to an index seek.
