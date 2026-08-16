@@ -1,12 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.12002.237 oobstable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketTest.Api", "TicketTest.Api\TicketTest.Api.csproj", "{31F15E21-CCF2-4EE6-AF19-84CC0A8C332A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{4174089C-39CF-475F-AE93-12F733A06B54}"
 	ProjectSection(SolutionItems) = preProject
+		SQL\answers.sql = SQL\answers.sql
 		SQL\questions.sql = SQL\questions.sql
 	EndProjectSection
 EndProject
