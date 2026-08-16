@@ -1,0 +1,18 @@
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 500px;
+  padding-top: 8px;
+}
+
+.server-error {
+  margin: 0;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .ticket-form {
+    min-width: auto;
+  }
+}

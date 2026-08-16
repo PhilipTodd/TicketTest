@@ -1,0 +1,150 @@
+<h2 mat-dialog-title>
+  {{ isEditMode ? 'Edit Ticket' : 'Create Ticket' }}
+</h2>
+
+<mat-dialog-content>
+
+  <form
+    class="ticket-form"
+    [formGroup]="form">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Title</mat-label>
+
+      <input
+        matInput
+        formControlName="title"
+        maxlength="150">
+
+      @if (form.controls.title.hasError('required')) {
+        <mat-error>Title is required.</mat-error>
+      }
+
+      @if (form.controls.title.hasError('maxlength')) {
+        <mat-error>
+          Title cannot exceed 150 characters.
+        </mat-error>
+      }
+
+      @if (form.controls.title.hasError('server')) {
+        <mat-error>
+          {{ form.controls.title.getError('server') }}
+        </mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+
+      <textarea
+        matInput
+        rows="5"
+        formControlName="description">
+      </textarea>
+
+      @if (form.controls.description.hasError('required')) {
+        <mat-error>Description is required.</mat-error>
+      }
+
+      @if (form.controls.description.hasError('server')) {
+        <mat-error>
+          {{ form.controls.description.getError('server') }}
+        </mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+
+      <mat-select formControlName="status">
+        @for (status of statuses; track status) {
+          <mat-option [value]="status">
+            {{ status }}
+          </mat-option>
+        }
+      </mat-select>
+
+      @if (form.controls.status.hasError('server')) {
+        <mat-error>
+          {{ form.controls.status.getError('server') }}
+        </mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Priority</mat-label>
+
+      <mat-select formControlName="priority">
+        @for (priority of priorities; track priority) {
+          <mat-option [value]="priority">
+            {{ priority }}
+          </mat-option>
+        }
+      </mat-select>
+
+      @if (form.controls.priority.hasError('server')) {
+        <mat-error>
+          {{ form.controls.priority.getError('server') }}
+        </mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Assigned To</mat-label>
+
+      <input
+        matInput
+        formControlName="assignedTo">
+
+      @if (
+        form.controls.assignedTo.hasError(
+          'criticalRequiresAssignee'
+        )
+      ) {
+        <mat-error>
+          Critical tickets require an assignee.
+        </mat-error>
+      }
+
+      @if (form.controls.assignedTo.hasError('server')) {
+        <mat-error>
+          {{ form.controls.assignedTo.getError('server') }}
+        </mat-error>
+      }
+    </mat-form-field>
+
+    @if (serverError()) {
+      <p class="server-error">
+        {{ serverError() }}
+      </p>
+    }
+
+  </form>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+
+  <button
+    mat-button
+    type="button"
+    [disabled]="isSaving()"
+    (click)="cancel()">
+    Cancel
+  </button>
+
+  <button
+    mat-flat-button
+    type="button"
+    [disabled]="isSaving()"
+    (click)="save()">
+
+    @if (isSaving()) {
+        Saving...
+    } @else {
+        {{ isEditMode ? 'Save Changes' : 'Create' }}
+    }
+
+  </button>
+
+</mat-dialog-actions>
