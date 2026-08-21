@@ -6,6 +6,9 @@
 # project specific Files
 TicketTest.Api/tickets.db
 
+# repomix output
+repomix*.xml
+
 # Local development settings
 appsettings.Development.json
 appsettings.Local.json
