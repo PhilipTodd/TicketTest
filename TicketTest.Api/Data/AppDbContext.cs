@@ -9,8 +9,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Ticket>()
-            .Property(ticket => ticket.Version)
-            .HasDefaultValue(1);
+        modelBuilder.HasDefaultSchema("ticketing");
+
+        modelBuilder.Entity<Ticket>(entity =>
+        {
+            entity.ToTable("Tickets");
+
+            entity.Property(ticket => ticket.Version)
+                .HasDefaultValue(1);
+        });
     }
 }

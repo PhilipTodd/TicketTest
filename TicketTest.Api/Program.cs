@@ -6,8 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+        }));
 
 builder.Services.AddCors(options =>
 {
@@ -22,18 +28,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("AngularClient");
+// following will seed the db only if ticketing.tickets table is emnpty
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//    SeedData.Initialise(db);
+//}
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
-    SeedData.Initialise(db);
-}
+app.UseCors("AngularClient");
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
 app.MapControllers();
+
 app.Run();
 
 public partial class Program; // <-- give integration test project a public type to use
