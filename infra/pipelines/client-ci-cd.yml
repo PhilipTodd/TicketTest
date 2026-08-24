@@ -39,7 +39,17 @@ stages:
       displayName: Show Node and npm versions
 
     - script: |
-        npm ci
+        pwd
+        ls -la
+        echo "package.json:"
+        cat package.json
+        echo "package-lock.json header:"
+        head -40 package-lock.json
+      workingDirectory: TicketTest.Client
+      displayName: Inspect client package files
+
+    - script: |
+        npm ci --verbose
       workingDirectory: TicketTest.Client
       displayName: Install dependencies
 
