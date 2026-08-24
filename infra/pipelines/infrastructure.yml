@@ -21,7 +21,7 @@ variables:
   azureServiceConnection: 'sc-esr-dev'
   location: 'australiaeast'
   templateFile: 'infra/bicep/main.bicep'
-  parametersFile: 'infra/bicep/dev.bicepparam'
+  parametersFile: 'infra/bicep/environments/dev.bicepparam'
 
 stages:
 - stage: Validate
