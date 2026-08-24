@@ -1,0 +1,102 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - infra/**
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - infra/**
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  azureServiceConnection: 'sc-esr-dev'
+  location: 'australiaeast'
+  templateFile: 'infra/bicep/main.bicep'
+  parametersFile: 'infra/bicep/dev.bicepparam'
+
+stages:
+- stage: Validate
+  displayName: Validate Bicep
+  jobs:
+  - job: Validate
+    steps:
+    - checkout: self
+
+    - task: AzureCLI@2
+      displayName: Build Bicep
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az bicep build \
+            --file $(templateFile)
+
+    - task: AzureCLI@2
+      displayName: Validate deployment
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az deployment sub validate \
+            --location $(location) \
+            --template-file $(templateFile) \
+            --parameters $(parametersFile) \
+            --parameters sqlConnectionString="$(SqlConnectionString)"
+
+- stage: WhatIf
+  displayName: What-If
+  dependsOn: Validate
+  jobs:
+  - job: WhatIf
+    steps:
+    - checkout: self
+
+    - task: AzureCLI@2
+      displayName: Run What-If
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az deployment sub what-if \
+            --location $(location) \
+            --template-file $(templateFile) \
+            --parameters $(parametersFile) \
+            --parameters sqlConnectionString="$(SqlConnectionString)"
+
+- stage: Deploy
+  displayName: Deploy Infrastructure
+  dependsOn: WhatIf
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: Deploy
+    environment: ticketing-dev
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: AzureCLI@2
+            displayName: Deploy Bicep
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az deployment sub create \
+                  --location $(location) \
+                  --template-file $(templateFile) \
+                  --parameters $(parametersFile) \
+                  --parameters sqlConnectionString="$(SqlConnectionString)"
