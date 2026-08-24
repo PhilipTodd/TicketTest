@@ -9,6 +9,9 @@ TicketTest.Api/tickets.db
 # repomix output
 repomix*.xml
 
+# bicep Output
+**/bicep/**/main.json
+
 # Local development settings
 appsettings.Development.json
 appsettings.Local.json

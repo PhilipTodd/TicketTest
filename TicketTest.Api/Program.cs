@@ -13,18 +13,28 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure();
+
+            sqlOptions.MigrationsHistoryTable(
+                "__EFMigrationsHistory",
+                "ticketing");
         }));
+
+var allowedOrigins =
+    builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>()
+    ?? ["http://localhost:4200"];
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AngularClient", policy =>
+    options.AddPolicy("uiClient", policy =>
     {
         policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
-}); 
+});
 
 var app = builder.Build();
 
