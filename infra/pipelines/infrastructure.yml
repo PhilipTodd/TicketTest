@@ -94,8 +94,8 @@ stages:
               --location $(location) \
               --template-file $(templateFile) \
               --parameters $(parametersFile) \
-            env:
-              SQL_CONNECTION_STRING: $(SqlConnectionString)
+        env:
+          SQL_CONNECTION_STRING: $(SqlConnectionString)
 
   # ==========================================================================
   # What-If
@@ -120,8 +120,8 @@ stages:
               --location $(location) \
               --template-file $(templateFile) \
               --parameters $(parametersFile) \
-            env:
-              SQL_CONNECTION_STRING: $(SqlConnectionString)
+        env:
+          SQL_CONNECTION_STRING: $(SqlConnectionString)
 
   # ==========================================================================
   # Deploy
