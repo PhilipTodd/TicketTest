@@ -34,6 +34,11 @@ stages:
         versionSpec: $(nodeVersion)
 
     - script: |
+        node --version
+        npm --version
+      displayName: Show Node and npm versions
+
+    - script: |
         npm ci
       workingDirectory: TicketTest.Client
       displayName: Install dependencies
