@@ -21,6 +21,10 @@ variables:
   nodeVersion: '22.x'
 
 stages:
+
+# ============================================================================
+# Build
+# ============================================================================
 - stage: Build
   displayName: Build Angular Client
   jobs:
@@ -58,5 +62,37 @@ stages:
       workingDirectory: TicketTest.Client
       displayName: Build Angular application
 
-    - publish: TicketTest.Client/dist
-      artifact: client
+# ============================================================================
+# Deploy
+# ============================================================================
+
+- stage: Deploy
+  displayName: Deploy Angular Client
+  dependsOn: Build
+
+  condition: and(
+    succeeded(),
+    eq(variables['Build.SourceBranch'], 'refs/heads/main')
+    )
+
+  jobs:
+  - deployment: DeployClient
+    displayName: Deploy Static Web App
+    environment: ticketing-dev
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: AzureStaticWebApp@0
+            displayName: Deploy Angular application
+            inputs:
+              azure_static_web_apps_api_token: $(StaticWebAppDeploymentToken)
+
+              app_location: 'TicketTest.Client'
+              output_location: 'dist/TicketTest.Client/browser'
+
+    # - publish: TicketTest.Client/dist
+    #   artifact: client
