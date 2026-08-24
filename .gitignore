@@ -15,7 +15,7 @@ repomix*.xml
 # Local development settings
 appsettings.Development.json
 appsettings.Local.json
-main.dev.local.bicepparam
+dev.local.bicepparam
 local.settings.json
 
 # Jekyll
