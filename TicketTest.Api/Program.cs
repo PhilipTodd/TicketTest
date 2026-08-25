@@ -27,7 +27,7 @@ var allowedOrigins =
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("uiClient", policy =>
+    options.AddPolicy("UI-Client", policy =>
     {
         policy
             .WithOrigins(allowedOrigins)
@@ -45,7 +45,7 @@ var app = builder.Build();
 //    SeedData.Initialise(db);
 //}
 
-app.UseCors("AngularClient");
+app.UseCors("UI-Client");
 
 app.UseSwagger();
 app.UseSwaggerUI();
