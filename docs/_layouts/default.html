@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description"
+          content="{{ page.description | default: site.description | escape }}">
+
+    <meta name="author" content="Philip Todd">
+
+    <title>{{ page.title }} | {{ site.title }}</title>
+
+    <link rel="stylesheet"
+          href="{{ '/assets/css/styles.css' | relative_url }}">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="header-container">
+            <h1>
+                <a href="{{ '/' | relative_url }}">
+                    {{ site.title }}
+                </a>
+            </h1>
+        </div>
+    </header>
+
+    <div class="layout-wrapper">
+
+        <aside class="sidebar-nav">
+
+            <nav aria-label="Documentation Navigation">
+
+                <a href="{{ '/' | relative_url }}">
+                    Home
+                </a>
+
+                <a href="{{ '/architecture' | relative_url }}">
+                    Architecture
+                </a>
+
+                <a href="{{ '/engineering-decisions' | relative_url }}">
+                    Engineering Decisions
+                </a>
+
+                <a href="{{ '/azure' | relative_url }}">
+                    Azure
+                </a>
+
+                <a href="{{ '/ai-assisted-development' | relative_url }}">
+                    AI-Assisted Development
+                </a>
+
+                <a href="https://github.com/philiptodd/TicketTest"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="external-link">
+                    GitHub ↗
+                </a>
+
+                <a href="https://demo.ticketing.ausdatatech.com.au"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    Live Demo ↗
+                </a>
+
+            </nav>
+
+        </aside>
+
+        <main>
+            {{ content }}
+        </main>
+
+    </div>
+
+    <footer>
+        <p>
+            © {{ site.time | date: "%Y" }} Philip Todd
+        </p>
+    </footer>
+
+</body>
+
+</html>

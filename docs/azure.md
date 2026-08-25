@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Azure Hosting and Delivery
+permalink: /azure/
 ---
 
 # Azure Hosting and Delivery

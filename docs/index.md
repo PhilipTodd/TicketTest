@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Ticketing Reference Application
+permalink: /
 ---
 
 # Ticketing Reference Application
@@ -91,10 +92,23 @@ AI-generated output was treated as proposed engineering input rather than author
 
 See [AI-Assisted Development](ai-assisted-development) for further details.
 
-## Explore the Project
+---
 
-- [Architecture](architecture)
-- [Engineering Decisions](engineering-decisions)
-- [Azure Hosting and Delivery](azure)
-- [AI-Assisted Development](ai-assisted-development)
-- [Live Demo](https://demo.ticketing.ausdatatech.com.au)
+## Documentation
+
+- [Architecture](/architecture/)
+- [Engineering Decisions](/engineering-decisions/)
+- [Azure Hosting and Delivery](/azure/)
+- [AI-Assisted Development](/ai-assisted-development/)
+
+---
+
+## Source Code
+
+[GitHub Repository](https://github.com/philiptodd/TicketTest){:target="_blank"}
+
+---
+
+## Live Demo
+
+[Launch Ticketing Demo](https://demo.ticketing.ausdatatech.com.au/){:target="_blank"}

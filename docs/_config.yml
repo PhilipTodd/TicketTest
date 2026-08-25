@@ -1,5 +1,5 @@
-title: Ticketing Reference System
-description: Cloud-native ticketing reference implementation built with .NET 8 and Angular.
+title: Ticketing Reference Application
+description: ASP.NET Core and Angular ticket management reference application
 
 theme: minima
 

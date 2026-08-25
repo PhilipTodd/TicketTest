@@ -1,6 +1,7 @@
 ---
 layout: default
 title: AI-Assisted Development
+permalink: /ai-assisted-development/
 ---
 
 # AI-Assisted Development

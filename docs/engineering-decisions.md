@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Engineering Decisions
+permalink: /engineering-decisions/
 ---
 
 # Engineering Decisions
