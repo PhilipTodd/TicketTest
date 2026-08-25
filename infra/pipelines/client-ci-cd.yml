@@ -58,7 +58,7 @@ stages:
       displayName: Install dependencies
 
     - script: |
-        npm run build
+        npm run build -- --configuration production
       workingDirectory: TicketTest.Client
       displayName: Build Angular application
 
