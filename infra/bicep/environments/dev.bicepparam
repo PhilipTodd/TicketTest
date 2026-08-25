@@ -48,6 +48,7 @@ param staticWebAppName = 'web-adt-ticketing-dev'
 
 param corsAllowedOrigins = [
   'http://localhost:4200'
+  'https://demo.ticketing.ausdatatech.com.au'
 ]
 
 // ============================================================================

@@ -118,6 +118,21 @@ resource sharedSqlDatabase 'Microsoft.Sql/servers/databases@2023-08-01' existing
 }
 
 // ============================================================================
+// Ticketing Static Web App
+// ============================================================================
+
+module staticWebApp './modules/static-web-app.bicep' = {
+  name: 'ticketing-static-web-app'
+  scope: applicationResourceGroup
+
+  params: {
+    location: staticWebAppLocation
+    staticWebAppName: staticWebAppName
+    tags: tags
+  }
+}
+
+// ============================================================================
 // Ticketing API App Service
 // ============================================================================
 
@@ -136,24 +151,14 @@ module appService './modules/appservice.bicep' = {
 
     sqlConnectionString: sqlConnectionString
 
-    corsAllowedOrigins: corsAllowedOrigins
+    corsAllowedOrigins: concat(
+      corsAllowedOrigins,
+      [
+        'https://${staticWebApp.outputs.staticWebAppDefaultHostName}'
+      ]
+    )
 
     environment: environment
-    tags: tags
-  }
-}
-
-// ============================================================================
-// Ticketing Static Web App
-// ============================================================================
-
-module staticWebApp './modules/static-web-app.bicep' = {
-  name: 'ticketing-static-web-app'
-  scope: applicationResourceGroup
-
-  params: {
-    location: staticWebAppLocation
-    staticWebAppName: staticWebAppName
     tags: tags
   }
 }
