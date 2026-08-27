@@ -18,6 +18,9 @@ appsettings.Local.json
 dev.local.bicepparam
 local.settings.json
 
+# Structurizr temporary files, local server cache, and thumbnails
+.structurizr/
+
 # Jekyll
 docs/_site/
 docs/.jekyll-cache/
