@@ -1,0 +1,336 @@
+{
+  "configuration" : { },
+  "description" : "C4 architecture model for the Ticketing Reference Application.",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedAgent" : "structurizr-ui",
+  "lastModifiedDate" : "2026-08-27T01:42:02Z",
+  "model" : {
+    "people" : [ {
+      "description" : "Uses the application to view, create, edit and delete support tickets.",
+      "id" : "1",
+      "name" : "User",
+      "properties" : {
+        "structurizr.dsl.identifier" : "user"
+      },
+      "relationships" : [ {
+        "description" : "Uses",
+        "destinationId" : "3",
+        "id" : "10",
+        "sourceId" : "1",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "Uses",
+        "destinationId" : "2",
+        "id" : "11",
+        "linkedRelationshipId" : "10",
+        "sourceId" : "1",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "containers" : [ {
+        "description" : "Provides the browser-based ticket management interface, including filtering, paging, creation, editing and deletion.",
+        "documentation" : { },
+        "id" : "3",
+        "name" : "Ticketing Web UI",
+        "properties" : {
+          "structurizr.dsl.identifier" : "web"
+        },
+        "relationships" : [ {
+          "description" : "Calls REST API",
+          "destinationId" : "4",
+          "id" : "12",
+          "sourceId" : "3",
+          "tags" : "Relationship",
+          "technology" : "HTTPS / JSON"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Angular"
+      }, {
+        "description" : "Provides REST endpoints for ticket queries and commands, validates business rules and manages persistence.",
+        "documentation" : { },
+        "id" : "4",
+        "name" : "Ticketing API",
+        "properties" : {
+          "structurizr.dsl.identifier" : "api"
+        },
+        "relationships" : [ {
+          "description" : "Reads and writes tickets",
+          "destinationId" : "5",
+          "id" : "13",
+          "sourceId" : "4",
+          "tags" : "Relationship",
+          "technology" : "Entity Framework Core / TDS"
+        }, {
+          "description" : "Sends application telemetry",
+          "destinationId" : "6",
+          "id" : "14",
+          "sourceId" : "4",
+          "tags" : "Relationship",
+          "technology" : "Application Insights SDK"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "ASP.NET Core / .NET 8"
+      }, {
+        "description" : "Stores ticket state and EF Core migration history within the ticketing schema of ReferenceProjectsDb.",
+        "documentation" : { },
+        "id" : "5",
+        "name" : "Ticketing Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "database"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Azure SQL / Entity Framework Core"
+      } ],
+      "description" : "A full-stack ticket management reference application built with Angular, ASP.NET Core and Azure SQL.",
+      "documentation" : { },
+      "id" : "2",
+      "name" : "Ticketing Reference Application",
+      "properties" : {
+        "structurizr.dsl.identifier" : "ticketing"
+      },
+      "relationships" : [ {
+        "description" : "Sends application telemetry",
+        "destinationId" : "6",
+        "id" : "15",
+        "linkedRelationshipId" : "14",
+        "sourceId" : "2",
+        "technology" : "Application Insights SDK"
+      } ],
+      "tags" : "Element,Software System"
+    }, {
+      "description" : "Collects application telemetry, requests, dependencies and exceptions.",
+      "documentation" : { },
+      "id" : "6",
+      "name" : "Application Insights",
+      "properties" : {
+        "structurizr.dsl.identifier" : "appInsights"
+      },
+      "relationships" : [ {
+        "description" : "Stores and exposes telemetry",
+        "destinationId" : "7",
+        "id" : "16",
+        "sourceId" : "6",
+        "tags" : "Relationship",
+        "technology" : "Azure Monitor"
+      } ],
+      "tags" : "Element,Software System,Azure Application Insights"
+    }, {
+      "description" : "Provides centralised storage and querying of Azure operational telemetry.",
+      "documentation" : { },
+      "id" : "7",
+      "name" : "Log Analytics",
+      "properties" : {
+        "structurizr.dsl.identifier" : "logAnalytics"
+      },
+      "tags" : "Element,Software System,Azure Log Analytics"
+    }, {
+      "description" : "Hosts the public application source code and project documentation.",
+      "documentation" : { },
+      "id" : "8",
+      "name" : "GitHub",
+      "properties" : {
+        "structurizr.dsl.identifier" : "github"
+      },
+      "relationships" : [ {
+        "description" : "Provides source code",
+        "destinationId" : "9",
+        "id" : "17",
+        "sourceId" : "8",
+        "tags" : "Relationship",
+        "technology" : "Git"
+      } ],
+      "tags" : "Element,Software System,GitHub"
+    }, {
+      "description" : "Builds, tests and deploys the application and its Azure infrastructure.",
+      "documentation" : { },
+      "id" : "9",
+      "name" : "Azure DevOps",
+      "properties" : {
+        "structurizr.dsl.identifier" : "azureDevOps"
+      },
+      "relationships" : [ {
+        "description" : "Builds and deploys",
+        "destinationId" : "3",
+        "id" : "18",
+        "sourceId" : "9",
+        "tags" : "Relationship",
+        "technology" : "Azure Static Web Apps deployment"
+      }, {
+        "description" : "Builds and deploys",
+        "destinationId" : "2",
+        "id" : "19",
+        "linkedRelationshipId" : "18",
+        "sourceId" : "9",
+        "technology" : "Azure Static Web Apps deployment"
+      }, {
+        "description" : "Builds, tests and deploys",
+        "destinationId" : "4",
+        "id" : "20",
+        "sourceId" : "9",
+        "tags" : "Relationship",
+        "technology" : "Azure App Service deployment"
+      } ],
+      "tags" : "Element,Software System,Azure DevOps Pipelines"
+    } ]
+  },
+  "name" : "Ticketing Reference Application",
+  "properties" : {
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.error" : "3",
+    "structurizr.inspection.warning" : "0",
+    "structurizr.dsl" : "d29ya3NwYWNlICJUaWNrZXRpbmcgUmVmZXJlbmNlIEFwcGxpY2F0aW9uIiAiQzQgYXJjaGl0ZWN0dXJlIG1vZGVsIGZvciB0aGUgVGlja2V0aW5nIFJlZmVyZW5jZSBBcHBsaWNhdGlvbi4iIHsKCiAgICBtb2RlbCB7CgogICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgICAgICAgLy8gUGVvcGxlCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICAgICAgdXNlciA9IHBlcnNvbiAiVXNlciIgIlVzZXMgdGhlIGFwcGxpY2F0aW9uIHRvIHZpZXcsIGNyZWF0ZSwgZWRpdCBhbmQgZGVsZXRlIHN1cHBvcnQgdGlja2V0cy4iCgogICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgICAgICAgLy8gVGlja2V0aW5nIFN5c3RlbQogICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgogICAgICAgIHRpY2tldGluZyA9IHNvZnR3YXJlU3lzdGVtICJUaWNrZXRpbmcgUmVmZXJlbmNlIEFwcGxpY2F0aW9uIiAiQSBmdWxsLXN0YWNrIHRpY2tldCBtYW5hZ2VtZW50IHJlZmVyZW5jZSBhcHBsaWNhdGlvbiBidWlsdCB3aXRoIEFuZ3VsYXIsIEFTUC5ORVQgQ29yZSBhbmQgQXp1cmUgU1FMLiIgewoKICAgICAgICAgICAgd2ViID0gY29udGFpbmVyICJUaWNrZXRpbmcgV2ViIFVJIiAiUHJvdmlkZXMgdGhlIGJyb3dzZXItYmFzZWQgdGlja2V0IG1hbmFnZW1lbnQgaW50ZXJmYWNlLCBpbmNsdWRpbmcgZmlsdGVyaW5nLCBwYWdpbmcsIGNyZWF0aW9uLCBlZGl0aW5nIGFuZCBkZWxldGlvbi4iICJBbmd1bGFyIgoKICAgICAgICAgICAgYXBpID0gY29udGFpbmVyICJUaWNrZXRpbmcgQVBJIiAiUHJvdmlkZXMgUkVTVCBlbmRwb2ludHMgZm9yIHRpY2tldCBxdWVyaWVzIGFuZCBjb21tYW5kcywgdmFsaWRhdGVzIGJ1c2luZXNzIHJ1bGVzIGFuZCBtYW5hZ2VzIHBlcnNpc3RlbmNlLiIgIkFTUC5ORVQgQ29yZSAvIC5ORVQgOCIKCiAgICAgICAgICAgIGRhdGFiYXNlID0gY29udGFpbmVyICJUaWNrZXRpbmcgRGF0YWJhc2UiICJTdG9yZXMgdGlja2V0IHN0YXRlIGFuZCBFRiBDb3JlIG1pZ3JhdGlvbiBoaXN0b3J5IHdpdGhpbiB0aGUgdGlja2V0aW5nIHNjaGVtYSBvZiBSZWZlcmVuY2VQcm9qZWN0c0RiLiIgIkF6dXJlIFNRTCAvIEVudGl0eSBGcmFtZXdvcmsgQ29yZSIKCiAgICAgICAgfQoKICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogICAgICAgIC8vIEV4dGVybmFsIFN5c3RlbXMKICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKICAgICAgICBhcHBJbnNpZ2h0cyA9IHNvZnR3YXJlU3lzdGVtICJBcHBsaWNhdGlvbiBJbnNpZ2h0cyIgIkNvbGxlY3RzIGFwcGxpY2F0aW9uIHRlbGVtZXRyeSwgcmVxdWVzdHMsIGRlcGVuZGVuY2llcyBhbmQgZXhjZXB0aW9ucy4iICJBenVyZSBBcHBsaWNhdGlvbiBJbnNpZ2h0cyIKCiAgICAgICAgbG9nQW5hbHl0aWNzID0gc29mdHdhcmVTeXN0ZW0gIkxvZyBBbmFseXRpY3MiICJQcm92aWRlcyBjZW50cmFsaXNlZCBzdG9yYWdlIGFuZCBxdWVyeWluZyBvZiBBenVyZSBvcGVyYXRpb25hbCB0ZWxlbWV0cnkuIiAiQXp1cmUgTG9nIEFuYWx5dGljcyIKCiAgICAgICAgZ2l0aHViID0gc29mdHdhcmVTeXN0ZW0gIkdpdEh1YiIgIkhvc3RzIHRoZSBwdWJsaWMgYXBwbGljYXRpb24gc291cmNlIGNvZGUgYW5kIHByb2plY3QgZG9jdW1lbnRhdGlvbi4iICJHaXRIdWIiCgogICAgICAgIGF6dXJlRGV2T3BzID0gc29mdHdhcmVTeXN0ZW0gIkF6dXJlIERldk9wcyIgIkJ1aWxkcywgdGVzdHMgYW5kIGRlcGxveXMgdGhlIGFwcGxpY2F0aW9uIGFuZCBpdHMgQXp1cmUgaW5mcmFzdHJ1Y3R1cmUuIiAiQXp1cmUgRGV2T3BzIFBpcGVsaW5lcyIKCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAvLyBSZWxhdGlvbnNoaXBzCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICAgICAgdXNlciAtPiB3ZWIgIlVzZXMiICJIVFRQUyIKCiAgICAgICAgd2ViIC0+IGFwaSAiQ2FsbHMgUkVTVCBBUEkiICJIVFRQUyAvIEpTT04iCgogICAgICAgIGFwaSAtPiBkYXRhYmFzZSAiUmVhZHMgYW5kIHdyaXRlcyB0aWNrZXRzIiAiRW50aXR5IEZyYW1ld29yayBDb3JlIC8gVERTIgoKICAgICAgICBhcGkgLT4gYXBwSW5zaWdodHMgIlNlbmRzIGFwcGxpY2F0aW9uIHRlbGVtZXRyeSIgIkFwcGxpY2F0aW9uIEluc2lnaHRzIFNESyIKCiAgICAgICAgYXBwSW5zaWdodHMgLT4gbG9nQW5hbHl0aWNzICJTdG9yZXMgYW5kIGV4cG9zZXMgdGVsZW1ldHJ5IiAiQXp1cmUgTW9uaXRvciIKCiAgICAgICAgZ2l0aHViIC0+IGF6dXJlRGV2T3BzICJQcm92aWRlcyBzb3VyY2UgY29kZSIgIkdpdCIKCiAgICAgICAgYXp1cmVEZXZPcHMgLT4gd2ViICJCdWlsZHMgYW5kIGRlcGxveXMiICJBenVyZSBTdGF0aWMgV2ViIEFwcHMgZGVwbG95bWVudCIKCiAgICAgICAgYXp1cmVEZXZPcHMgLT4gYXBpICJCdWlsZHMsIHRlc3RzIGFuZCBkZXBsb3lzIiAiQXp1cmUgQXBwIFNlcnZpY2UgZGVwbG95bWVudCIKCiAgICB9CgogICAgdmlld3MgewoKICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogICAgICAgIC8vIFN5c3RlbSBDb250ZXh0CiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICAgICAgc3lzdGVtQ29udGV4dCB0aWNrZXRpbmcgIlN5c3RlbUNvbnRleHQiIHsKCiAgICAgICAgICAgIGluY2x1ZGUgdXNlcgogICAgICAgICAgICBpbmNsdWRlIHRpY2tldGluZwogICAgICAgICAgICBpbmNsdWRlIGFwcEluc2lnaHRzCiAgICAgICAgICAgIGluY2x1ZGUgZ2l0aHViCiAgICAgICAgICAgIGluY2x1ZGUgYXp1cmVEZXZPcHMKCiAgICAgICAgICAgIGF1dG9sYXlvdXQgbHIKCiAgICAgICAgICAgIHRpdGxlICJUaWNrZXRpbmcgUmVmZXJlbmNlIEFwcGxpY2F0aW9uIC0gU3lzdGVtIENvbnRleHQiCiAgICAgICAgICAgIGRlc2NyaXB0aW9uICJTaG93cyB0aGUgVGlja2V0aW5nIGFwcGxpY2F0aW9uLCBpdHMgdXNlcnMgYW5kIHN1cHBvcnRpbmcgZGV2ZWxvcG1lbnQgYW5kIG9wZXJhdGlvbmFsIHN5c3RlbXMuIgogICAgICAgIH0KCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAvLyBDb250YWluZXIgVmlldwogICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgogICAgICAgIGNvbnRhaW5lciB0aWNrZXRpbmcgIkNvbnRhaW5lcnMiIHsKCiAgICAgICAgICAgIGluY2x1ZGUgdXNlcgoKICAgICAgICAgICAgaW5jbHVkZSB3ZWIKICAgICAgICAgICAgaW5jbHVkZSBhcGkKICAgICAgICAgICAgaW5jbHVkZSBkYXRhYmFzZQoKICAgICAgICAgICAgaW5jbHVkZSBhcHBJbnNpZ2h0cwogICAgICAgICAgICBpbmNsdWRlIGxvZ0FuYWx5dGljcwoKICAgICAgICAgICAgYXV0b2xheW91dCBscgoKICAgICAgICAgICAgdGl0bGUgIlRpY2tldGluZyBSZWZlcmVuY2UgQXBwbGljYXRpb24gLSBDb250YWluZXJzIgogICAgICAgICAgICBkZXNjcmlwdGlvbiAiU2hvd3MgdGhlIEFuZ3VsYXIgd2ViIGFwcGxpY2F0aW9uLCBBU1AuTkVUIENvcmUgQVBJLCBBenVyZSBTUUwgcGVyc2lzdGVuY2UgYW5kIG9ic2VydmFiaWxpdHkgc2VydmljZXMuIgogICAgICAgIH0KCgogICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgICAgICAgLy8gU3R5bGVzCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICAgICAgc3R5bGVzIHsKCiAgICAgICAgICBlbGVtZW50ICJQZXJzb24iIHsKICAgICAgICAgICAgc2hhcGUgcGVyc29uCiAgICAgICAgICB9CgogICAgICAgICAgZWxlbWVudCAiRXh0ZXJuYWwiIHsKICAgICAgICAgICAgYm9yZGVyIGRhc2hlZAogICAgICAgICAgfQoKICAgICAgICAgIGVsZW1lbnQgIlN5c3RlbSIgewogICAgICAgICAgICBzaGFwZSByb3VuZGVkQm94CiAgICAgICAgICB9CgogICAgICAgICAgZWxlbWVudCAiV2ViIiB7CiAgICAgICAgICAgIHNoYXBlIHJvdW5kZWRCb3gKICAgICAgICAgIH0KCiAgICAgICAgICBlbGVtZW50ICJHYXRld2F5IiB7CiAgICAgICAgICAgIHNoYXBlIHJvdW5kZWRCb3gKICAgICAgICAgIH0KCiAgICAgICAgICBlbGVtZW50ICJTZXJ2aWNlIiB7CiAgICAgICAgICAgIHNoYXBlIHJvdW5kZWRCb3gKICAgICAgICAgIH0KCiAgICAgICAgICBlbGVtZW50ICJEYXRhYmFzZSIgewogICAgICAgICAgICBzaGFwZSBjeWxpbmRlcgogICAgICAgICAgfQoKICAgICAgICAgIGVsZW1lbnQgIk1lc3NhZ2luZyIgewogICAgICAgICAgICBzaGFwZSBwaXBlCiAgICAgICAgICB9CgogICAgICAgICAgZWxlbWVudCAiSW5mcmEiIHsKICAgICAgICAgICAgc2hhcGUgcm91bmRlZEJveAogICAgICAgICAgfQogICAgICAgIH0KCgogICAgfQoKfQ=="
+  },
+  "views" : {
+    "configuration" : {
+      "branding" : { },
+      "lastSavedView" : "Containers",
+      "metadataSymbols" : "SquareBrackets",
+      "styles" : {
+        "elements" : [ {
+          "shape" : "Cylinder",
+          "tag" : "Database"
+        }, {
+          "border" : "Dashed",
+          "tag" : "External"
+        }, {
+          "shape" : "RoundedBox",
+          "tag" : "Gateway"
+        }, {
+          "shape" : "RoundedBox",
+          "tag" : "Infra"
+        }, {
+          "shape" : "Pipe",
+          "tag" : "Messaging"
+        }, {
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "shape" : "RoundedBox",
+          "tag" : "Service"
+        }, {
+          "shape" : "RoundedBox",
+          "tag" : "System"
+        }, {
+          "shape" : "RoundedBox",
+          "tag" : "Web"
+        } ]
+      },
+      "terminology" : { }
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "description" : "Shows the Angular web application, ASP.NET Core API, Azure SQL persistence and observability services.",
+      "dimensions" : {
+        "height" : 1350,
+        "width" : 3800
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 142
+      }, {
+        "id" : "3",
+        "x" : 900,
+        "y" : 192
+      }, {
+        "id" : "4",
+        "x" : 1650,
+        "y" : 192
+      }, {
+        "id" : "5",
+        "x" : 2400,
+        "y" : 192
+      }, {
+        "id" : "6",
+        "x" : 2400,
+        "y" : 792
+      }, {
+        "id" : "7",
+        "x" : 3150,
+        "y" : 792
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "Containers",
+      "name" : "Container View: Ticketing Reference Application",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "10"
+      }, {
+        "id" : "12"
+      }, {
+        "id" : "13"
+      }, {
+        "id" : "14"
+      }, {
+        "id" : "16"
+      } ],
+      "softwareSystemId" : "2",
+      "title" : "Ticketing Reference Application - Containers"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "description" : "Shows the Ticketing application, its users and supporting development and operational systems.",
+      "dimensions" : {
+        "height" : 1400,
+        "width" : 3100
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 975,
+        "y" : 142
+      }, {
+        "id" : "2",
+        "x" : 1700,
+        "y" : 517
+      }, {
+        "id" : "6",
+        "x" : 2450,
+        "y" : 517
+      }, {
+        "id" : "8",
+        "x" : 200,
+        "y" : 842
+      }, {
+        "id" : "9",
+        "x" : 950,
+        "y" : 842
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "SystemContext",
+      "name" : "System Context View: Ticketing Reference Application",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "11"
+      }, {
+        "id" : "15"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "19"
+      } ],
+      "softwareSystemId" : "2",
+      "title" : "Ticketing Reference Application - System Context"
+    } ]
+  }
+}
